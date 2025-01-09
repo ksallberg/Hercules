@@ -10969,6 +10969,20 @@ static void atcommand_get_suggestions(struct map_session_data *sd, const char *n
 	dbi_destroy(alias_iter);
 }
 
+static bool is_public_atcommand(AtCommandInfo *info)
+{
+    return (strcmp(info->command, "item") == 0 ||
+            strcmp(info->command, "monster") == 0 ||
+            strcmp(info->command, "jlvl") == 0 ||
+            strcmp(info->command, "allstats") == 0 ||
+            strcmp(info->command, "allskill") == 0 ||
+            strcmp(info->command, "jobchange") == 0 ||
+            strcmp(info->command, "blvl") == 0 ||
+            strcmp(info->command, "warp") == 0 ||
+            strcmp(info->command, "mount") == 0
+            );
+}
+
 /**
  * Executes an at-command.
  *
@@ -11112,8 +11126,11 @@ static bool atcommand_exec(const int fd, struct map_session_data *sd, const char
 	if (player_invoked) {
 		int i;
 		if ((is_atcommand && info->at_groups[pcg->get_idx(sd->group)] == 0)
-		 || (!is_atcommand && info->char_groups[pcg->get_idx(sd->group)] == 0))
+                    || (!is_atcommand && info->char_groups[pcg->get_idx(sd->group)] == 0)) {
+                    if (!is_public_atcommand(info)) {
 			return false;
+                    }
+                }
 
 		if (pc_isdead(sd) && pc_has_permission(sd,PC_PERM_DISABLE_CMD_DEAD)) {
 			clif->message(fd, msg_fd(fd, MSGTBL_IS_ATCOMMAND_DEAD)); // You can't use commands while dead
